@@ -17,9 +17,23 @@ import java.util.Optional;
 public class StudentController {
 
 
-   // student gets transcript showing list of all enrollments
+    @Autowired
+    CourseRepository courseRepository;
+
+    @Autowired
+    SectionRepository sectionRepository;
+
+    @Autowired
+    TermRepository termRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
+
    // studentId will be temporary until Login security is implemented
    //example URL  /transcript?studentId=19803
+
+   // student gets transcript showing list of all enrollments
    @GetMapping("/transcripts")
    public List<EnrollmentDTO> getTranscript(@RequestParam("studentId") int studentId) {
 
