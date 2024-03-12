@@ -1,4 +1,5 @@
 package com.cst438.dto;
+import java.sql.Date;
 
 
 /*
@@ -7,7 +8,7 @@ package com.cst438.dto;
 public record AssignmentDTO(
         int id,
         String title,
-        String dueDate,
+        Date dueDate,
         String courseId,
         int secId,
         int secNo
