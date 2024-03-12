@@ -29,9 +29,6 @@ public class StudentController {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    EnrollmentRepository enrollmentRepository;
-
 
    // studentId will be temporary until Login security is implemented
    //example URL  /transcript?studentId=19803
@@ -39,23 +36,14 @@ public class StudentController {
    // student gets transcript showing list of all enrollments
    @GetMapping("/transcripts")
    public List<EnrollmentDTO> getTranscript(@RequestParam("studentId") int studentId) {
-       List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId);
 
-       if(enrollments == null){
-           throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "student ID is invalid");
-       }
+       // TODO
 
-       List<EnrollmentDTO> transcript = new ArrayList<>();
-       for (Enrollment e : enrollments) {
-           EnrollmentDTO dto = new EnrollmentDTO(e.getEnrollmentId(), e.getGrade(), e.getUser().getId(), e.getUser().getName(),
-                   e.getUser().getEmail(), e.getSection().getCourse().getCourseId(), e.getSection().getSecId(),
-                   e.getSection().getSectionNo(), e.getSection().getBuilding(), e.getSection().getRoom(),
-                   e.getSection().getTimes(), e.getSection().getCourse().getCredits(), e.getSection().getTerm().getYear(),
-                   e.getSection().getTerm().getSemester());
-
-           transcript.add(dto);
-       }
-       return transcript;
+       // list course_id, sec_id, title, credit, grade in chronological order
+       // user must be a student
+	   // hint: use enrollment repository method findEnrollmentByStudentIdOrderByTermId
+       // remove the following line when done
+       return null;
    }
 
     // student gets a list of their enrollments for the given year, semester
@@ -68,23 +56,10 @@ public class StudentController {
            @RequestParam("studentId") int studentId) {
 
 
-     List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
-
-       if(enrollments == null){
-           throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "section with given year and semester not found");
-       }
-
-     List<EnrollmentDTO> schedule = new ArrayList<>();
-       for (Enrollment e : enrollments) {
-           EnrollmentDTO dto = new EnrollmentDTO(e.getEnrollmentId(), e.getGrade(), e.getUser().getId(), e.getUser().getName(),
-                   e.getUser().getEmail(), e.getSection().getCourse().getCourseId(), e.getSection().getSecId(),
-                   e.getSection().getSectionNo(), e.getSection().getBuilding(), e.getSection().getRoom(),
-                   e.getSection().getTimes(), e.getSection().getCourse().getCredits(), e.getSection().getTerm().getYear(),
-                   e.getSection().getTerm().getSemester());
-
-           schedule.add(dto);
-       }
-       return schedule;
+     // TODO
+	 //  hint: use enrollment repository method findByYearAndSemesterOrderByCourseId
+     //  remove the following line when done
+       return null;
    }
 
 
@@ -96,19 +71,7 @@ public class StudentController {
 		    @PathVariable int sectionNo,
             @RequestParam("studentId") int studentId ) {
 
-        Section section = sectionRepository.findById(sectionNo).orElseThrow(()
-                -> new ResponseStatusException(HttpStatus.NOT_FOUND, "section not found"));
-
-        Date today = new Date();
-        if (today.before(section.getTerm().getAddDate()) || today.after(section.getTerm().getAddDeadline())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not within the enrollment period");
-        }
-
-        boolean isEnrolled = enrollmentRepository.findByYearAndSemesterOrderByCourseId(section.getTerm().getYear(),
-                section.getTerm().getSemester(), studentId);
-        if (isEnrolled) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student is already enrolled in this section");
-        }
+        // TODO
 
         // check that the Section entity with primary key sectionNo exists
         // check that today is between addDate and addDeadline for the section
