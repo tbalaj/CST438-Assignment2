@@ -3,6 +3,7 @@ package com.cst438.domain;
 import jakarta.persistence.*;
 
 import java.sql.Date;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 @Entity
