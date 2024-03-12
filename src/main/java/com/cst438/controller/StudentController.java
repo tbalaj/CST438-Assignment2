@@ -138,18 +138,21 @@ public class StudentController {
     // user must be student
     @DeleteMapping("/enrollments/{enrollmentId}")
     public void dropCourse(@PathVariable("enrollmentId") int enrollmentId) {
-        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
+        Optional<Enrollment> enrollmentOpt = enrollmentRepository.findById(enrollmentId);
 
-        // Assuming Section has a getDropDeadline method returning a LocalDate
+        if (enrollmentOpt.isEmpty()) {
+            return;
+        }
+
+        Enrollment enrollment = enrollmentOpt.get();
+
         Date dropDeadline = enrollment.getSection().getTerm().getDropDeadline();
         Date today = new Date();
 
         if (today.after(dropDeadline)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot drop course after the drop deadline");
         }
-
-        // Proceed to delete if today's date is not after the drop deadline
+        
         enrollmentRepository.deleteById(enrollmentId);
     }
 }
