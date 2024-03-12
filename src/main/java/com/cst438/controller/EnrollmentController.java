@@ -2,7 +2,6 @@ package com.cst438.controller;
 
 
 import com.cst438.domain.*;
-import com.cst438.dto.CourseDTO;
 import com.cst438.dto.EnrollmentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,6 +38,11 @@ public class EnrollmentController {
         List<EnrollmentDTO> dto_list = new ArrayList<>();
 
         List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
+
+        if(enrollments == null){
+            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "section number is invalid");
+        }
+
         for (Enrollment e : enrollments){
             dto_list.add(new EnrollmentDTO(e.getEnrollmentId(), e.getGrade(), e.getUser().getId(), e.getUser().getName(),
                     e.getUser().getEmail(), e.getSection().getCourse().getCourseId(), e.getSection().getSecId(),
@@ -57,19 +61,12 @@ public class EnrollmentController {
     public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
 
         for(EnrollmentDTO e : dlist){
-            Enrollment f = enrollmentRepository.findById(e.enrollmentId()).get();
-
-            if (f==null) {
-                throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "enrollment not found ");
-            }            
+            Enrollment f = enrollmentRepository.findById(e.enrollmentId()).orElseThrow(()
+                    -> new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found"));
 
             f.setGrade(e.grade());
             enrollmentRepository.save(f);
         }
-
-        // For each EnrollmentDTO in the list
-        //  find the Enrollment entity using enrollmentId
-        //  update the grade and save back to database
 
     }
 
