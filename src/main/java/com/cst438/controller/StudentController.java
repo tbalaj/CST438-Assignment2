@@ -99,25 +99,38 @@ public class StudentController {
         Section section = sectionRepository.findById(sectionNo).orElseThrow(()
                 -> new ResponseStatusException(HttpStatus.NOT_FOUND, "section not found"));
 
+        User student = userRepository.findById(studentId).orElseThrow(()
+                -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
+
         Date today = new Date();
         if (today.before(section.getTerm().getAddDate()) || today.after(section.getTerm().getAddDeadline())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not within the enrollment period");
         }
 
-        boolean isEnrolled = enrollmentRepository.findByYearAndSemesterOrderByCourseId(section.getTerm().getYear(),
+        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(section.getTerm().getYear(),
                 section.getTerm().getSemester(), studentId);
-        if (isEnrolled) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student is already enrolled in this section");
+
+        for(Enrollment e : enrollments){
+            if(e.getUser().getId() == studentId){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student already enrolled");
+            }
         }
 
-        // check that the Section entity with primary key sectionNo exists
-        // check that today is between addDate and addDeadline for the section
-        // check that student is not already enrolled into this section
-        // create a new enrollment entity and save.  The enrollment grade will
-        // be NULL until instructor enters final grades for the course.
+        Enrollment e = new Enrollment();
 
-        // remove the following line when done.
-        return null;
+        e.setUser(student);
+        e.setSection(section);
+        e.setGrade(null);
+        enrollmentRepository.save(e);
+
+
+        EnrollmentDTO enrollmentDTO = new EnrollmentDTO(e.getEnrollmentId(), e.getGrade(), e.getUser().getId(), e.getUser().getName(),
+                e.getUser().getEmail(), e.getSection().getCourse().getCourseId(), e.getSection().getSecId(),
+                e.getSection().getSectionNo(), e.getSection().getBuilding(), e.getSection().getRoom(),
+                e.getSection().getTimes(), e.getSection().getCourse().getCredits(), e.getSection().getTerm().getYear(),
+                e.getSection().getTerm().getSemester());
+
+        return enrollmentDTO;
 
     }
 
@@ -125,8 +138,18 @@ public class StudentController {
     // user must be student
     @DeleteMapping("/enrollments/{enrollmentId}")
     public void dropCourse(@PathVariable("enrollmentId") int enrollmentId) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
 
-        // TODO
-        // check that today is not after the dropDeadline for section
+        // Assuming Section has a getDropDeadline method returning a LocalDate
+        Date dropDeadline = enrollment.getSection().getTerm().getDropDeadline();
+        Date today = new Date();
+
+        if (today.after(dropDeadline)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot drop course after the drop deadline");
+        }
+
+        // Proceed to delete if today's date is not after the drop deadline
+        enrollmentRepository.deleteById(enrollmentId);
     }
 }
