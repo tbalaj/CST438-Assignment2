@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -126,8 +127,16 @@ public class AssignmentController {
     @DeleteMapping("/assignments/{assignmentId}")
     public void deleteAssignment(@PathVariable("assignmentId") int assignmentId) {
 
+        //TODO: Check for instructor status
 
-        // TODO
+        Optional<Assignment> assignmentOpt = assignmentRepository.findById(assignmentId);
+
+        if (assignmentOpt.isEmpty()) {
+            return;
+        }
+
+        assignmentRepository.deleteById(assignmentId);
+
     }
 
     // instructor gets grades for assignment ordered by student name
@@ -156,34 +165,53 @@ public class AssignmentController {
         return gradesDtoList;
     }
 
-    // instructor uploads grades for assignment
-    // user must be instructor for the section
     @PutMapping("/grades")
     public void updateGrades(@RequestBody List<GradeDTO> dlist) {
+        for (GradeDTO gradeDTO : dlist) {
 
-        // TODO
+            //TODO: Check for instructor status
 
-        // for each grade in the GradeDTO list, retrieve the grade entity
-        // update the score and save the entity
+            Grade grade = gradeRepository.findById(gradeDTO.gradeId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found for ID: " + gradeDTO.gradeId()));
 
+            grade.setScore(gradeDTO.score());
+
+            gradeRepository.save(grade);
+        }
     }
-
-
 
     // student lists their assignments/grades for an enrollment ordered by due date
     // student must be enrolled in the section
+
     @GetMapping("/assignments")
     public List<AssignmentStudentDTO> getStudentAssignments(
             @RequestParam("studentId") int studentId,
             @RequestParam("year") int year,
             @RequestParam("semester") String semester) {
 
-        // TODO remove the following line when done
+        List<Assignment> assignments = assignmentRepository.findByStudentIdAndYearAndSemesterOrderByDueDate(studentId, year, semester);
 
-        // return a list of assignments and (if they exist) the assignment grade
-        //  for all sections that the student is enrolled for the given year and semester
-		//  hint: use the assignment repository method findByStudentIdAndYearAndSemesterOrderByDueDate
+        List<AssignmentStudentDTO> assignmentStudentDTOs = new ArrayList<>();
 
-        return null;
+        for (Assignment a : assignments) {
+
+            Enrollment enrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(a.getSection().getSectionNo(), studentId);
+
+
+
+            Grade grade = null;
+            if (enrollment != null) {
+                grade = gradeRepository.findByEnrollmentIdAndAssignmentId(enrollment.getEnrollmentId(), a.getAssignmentId());
+            }
+
+            Integer score = grade != null ? grade.getScore() : null;
+
+            AssignmentStudentDTO dto = new AssignmentStudentDTO(a.getAssignmentId(), a.getTitle(), a.getDueDate(),
+                    a.getSection().getCourse().getCourseId(), a.getSection().getSecId(), score);
+
+            assignmentStudentDTOs.add(dto);
+        }
+
+        return assignmentStudentDTOs;
     }
 }

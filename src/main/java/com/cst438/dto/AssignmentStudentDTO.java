@@ -5,6 +5,7 @@ import java.sql.Date;
  * Data Transfer Object for assignment data including student's grade
  */
 public record AssignmentStudentDTO(
+
         int assignmentId,
 
         String title,
