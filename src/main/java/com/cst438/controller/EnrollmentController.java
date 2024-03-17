@@ -44,10 +44,20 @@ public class EnrollmentController {
         }
 
         for (Enrollment e : enrollments){
-            dto_list.add(new EnrollmentDTO(e.getEnrollmentId(), e.getGrade(), e.getUser().getId(), e.getUser().getName(),
-                    e.getUser().getEmail(), e.getSection().getCourse().getCourseId(), e.getSection().getSecId(),
-                    e.getSection().getSectionNo(), e.getSection().getBuilding(), e.getSection().getRoom(),
-                    e.getSection().getTimes(), e.getSection().getCourse().getCredits(), e.getSection().getTerm().getYear(),
+            dto_list.add(new EnrollmentDTO(
+                    e.getEnrollmentId(),
+                    e.getGrade(),
+                    e.getUser().getId(),
+                    e.getUser().getName(),
+                    e.getUser().getEmail(),
+                    e.getSection().getCourse().getCourseId(),
+                    e.getSection().getSecId(),
+                    e.getSection().getSectionNo(),
+                    e.getSection().getBuilding(),
+                    e.getSection().getRoom(),
+                    e.getSection().getTimes(),
+                    e.getSection().getCourse().getCredits(),
+                    e.getSection().getTerm().getYear(),
                     e.getSection().getTerm().getSemester()));
         }
 
