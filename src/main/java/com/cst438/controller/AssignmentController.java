@@ -102,7 +102,7 @@ public class AssignmentController {
 
         //TODO: Check for instructor status
 
-        int assignmentId = dto.id();
+        int assignmentId = dto.assignmentId();
 
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
