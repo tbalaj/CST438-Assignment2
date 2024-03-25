@@ -94,13 +94,25 @@ public class StudentController {
     @PostMapping("/enrollments/sections/{sectionNo}")
     public EnrollmentDTO addCourse(
             @PathVariable int sectionNo,
-            @RequestParam("studentId") int studentId ) {
+            @RequestParam(value = "studentId", defaultValue = "3") int studentId ) {
 
-        Section section = sectionRepository.findById(sectionNo).orElseThrow(()
-                -> new ResponseStatusException(HttpStatus.NOT_FOUND, "section not found"));
+        Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, studentId);
+        if(e != null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student already enrolled");
+        }
 
-        User student = userRepository.findById(studentId).orElseThrow(()
-                -> new ResponseStatusException(HttpStatus.NOT_FOUND, "student not found"));
+        e = new Enrollment();
+
+        User student = userRepository.findById(studentId).orElse(null);
+        if (student==null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "student id not found");
+        }
+
+        e.setUser(student);
+        Section section = sectionRepository.findById(sectionNo).orElse(null);
+        if(section == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "section number not found");
+        }
 
         Date today = new Date();
         if (today.before(section.getTerm().getAddDate()) || today.after(section.getTerm().getAddDeadline())) {
@@ -110,15 +122,7 @@ public class StudentController {
         List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(section.getTerm().getYear(),
                 section.getTerm().getSemester(), studentId);
 
-        for(Enrollment e : enrollments){
-            if(e.getUser().getId() == studentId){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student already enrolled");
-            }
-        }
 
-        Enrollment e = new Enrollment();
-
-        e.setUser(student);
         e.setSection(section);
         e.setGrade(null);
         enrollmentRepository.save(e);

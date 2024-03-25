@@ -21,7 +21,8 @@ insert into course values
 ('cst334', 'Operating Systems', 4),
 ('cst363', 'Introduction to Database', 4),
 ('cst438', 'Software Engineering', 4),
-('cst499', 'Capstone', 4);
+('cst499', 'Capstone', 4),
+('cst532', 'Calculus 2', 4);
 
 insert into section(section_no, course_id, sec_id, term_id, building, room, times, instructor_email ) values
 (1, 'cst338', 1, 8, '052', '100', 'M W 10:00-11:50', 'jgross@csumb.edu'),
@@ -33,7 +34,8 @@ insert into section(section_no, course_id, sec_id, term_id, building, room, time
 (7, 'cst338', 2, 9, '052', '100', 'M W 10:00-11:50', 'jgross@csumb.edu'),
 (8, 'cst363', 1, 9, '052', '104', 'M W 10:00-11:50', 'dwisneski@csumb.edu'),
 (9, 'cst363', 2, 9, '052', '102', 'M W 2:00-3:50', 'dwisneski@csumb.edu'),
-(10, 'cst438', 1, 9, '052', '222', 'T Th 12:00-1:50', 'dwisneski@csumb.edu');
+(10, 'cst438', 1, 9, '052', '222', 'T Th 12:00-1:50', 'dwisneski@csumb.edu'),
+(11, 'cst532', 2, 9, '052', '230', 'M W 3:00-4:50', 'dwisneski@csumb.edu');
 
 insert into enrollment (enrollment_id, grade, section_no, user_id ) values
 (1, 'A', 1, 3),
