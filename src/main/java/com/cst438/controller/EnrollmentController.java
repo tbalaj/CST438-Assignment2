@@ -71,13 +71,14 @@ public class EnrollmentController {
     public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
 
         for(EnrollmentDTO e : dlist){
-            Enrollment f = enrollmentRepository.findById(e.enrollmentId()).orElseThrow(()
-                    -> new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found"));
-
-            f.setGrade(e.grade());
-            enrollmentRepository.save(f);
+            Enrollment f = enrollmentRepository.findById(e.enrollmentId()).orElse(null);
+            if (f==null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "enrollment not found "+e.enrollmentId());
+            }
+            else {
+                f.setGrade(e.grade());
+                enrollmentRepository.save(f);
+            }
         }
-
     }
-
 }

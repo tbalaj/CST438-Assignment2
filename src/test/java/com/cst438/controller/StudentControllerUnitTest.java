@@ -13,6 +13,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @AutoConfigureMockMvc
@@ -216,6 +219,63 @@ public class StudentControllerUnitTest {
         // check the expected error message
         String message = response.getErrorMessage();
         assertEquals("Not within the enrollment period", message);
+    }
+
+    @Test
+    public void updateFinalGrades() throws Exception {
+        MockHttpServletResponse response;
+
+        EnrollmentDTO enrollment1 = new EnrollmentDTO(
+                3,
+                "D",
+                3,
+                "thomas edison",
+                "tedison@csumb.edu",
+                "cst438",
+                2,
+                10,
+                "052",
+                "222",
+                "T Th 12:00-1:50",
+                4,
+                2024,
+                "Spring"
+        );
+
+        EnrollmentDTO enrollment2 = new EnrollmentDTO(
+                4,
+                "F",
+                5,
+                "ben franklin",
+                "bfranklin@csumb.edu",
+                "cst438",
+                2,
+                10,
+                "052",
+                "222",
+                "T Th 12:00-1:50",
+                4,
+                2024,
+                "Spring"
+        );
+
+        ArrayList enrollList = new ArrayList<>();
+        enrollList.add(enrollment1);
+        enrollList.add(enrollment2);
+
+        // issue a http PUT request to SpringTestServer
+        // specify MediaType for request and response data
+        // convert section to String data and set as request content
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/enrollments")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(enrollList)))
+                .andReturn()
+                .getResponse();
+        // check the response code for 200 meaning OK
+        assertEquals(200, response.getStatus());
     }
 
     @Test
