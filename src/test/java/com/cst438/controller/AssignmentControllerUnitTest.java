@@ -66,7 +66,7 @@ public class AssignmentControllerUnitTest {
          assertEquals("Test Assignment",result.title());
 
     }
-    
+    @Test
     public void failCreateAssignment() throws Exception {
    	 MockHttpServletResponse response;
 
@@ -94,6 +94,40 @@ public class AssignmentControllerUnitTest {
         String message = response.getErrorMessage();
         assertEquals("Section not found", message);
     }
+
+    /*  This test checks to make sure an error occurs when 
+     * a new assigment is created with a due date later than the
+     * end date of the class
+     */
+    @Test
+    public void failAssignmentInvalidDueDate() throws Exception {
+        MockHttpServletResponse response;
+
+       // 
+        AssignmentDTO assignment = new AssignmentDTO(
+                1,
+                "Test Assignment",
+                Date.valueOf("2101-01-01"),
+                "TestID",
+                1,
+                1
+        );
+        
+        response = mvc.perform(
+                MockMvcRequestBuilders
+                        .post("/assignments")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(assignment)))
+                .andReturn()
+                .getResponse();
+        // check the response code for 400 meaning FAIL
+        assertEquals(404, response.getStatus());
+        
+        String message = response.getErrorMessage();
+        assertEquals("Due date cannot be later than the session end date", message);
+
+   }
     
     private static String asJsonString(final Object obj) {
         try {
