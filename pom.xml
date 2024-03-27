@@ -54,6 +54,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-devtools-v122</artifactId>
+			<version>4.18.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-api</artifactId>
 			<scope>test</scope>
 		</dependency>

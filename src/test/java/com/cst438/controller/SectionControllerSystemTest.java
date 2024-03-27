@@ -6,22 +6,19 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SectionControllerSystemTest {
 
-    // TODO edit the following to give the location and file name
-    // of the Chrome driver.
-    //  for WinOS the file name will be chromedriver.exe
-    //  for MacOS the file name will be chromedriver
     public static final String CHROME_DRIVER_FILE_LOCATION =
-            "C:/chromedriver-win64/chromedriver.exe";
+            "C:/chromedriver-win32/chromedriver.exe";
 
-    //public static final String CHROME_DRIVER_FILE_LOCATION =
-    //        "~/chromedriver_macOS/chromedriver";
     public static final String URL = "http://localhost:3000";
 
     public static final int SLEEP_DURATION = 1000; // 1 second.
@@ -166,6 +163,8 @@ public class SectionControllerSystemTest {
         // verify success
         // delete the section
 
+
+
        // click link to navigate to Sections
        WebElement we = driver.findElement(By.id("sections"));
        we.click();
@@ -264,4 +263,75 @@ public class SectionControllerSystemTest {
        assertThrows(NoSuchElementException.class, () ->
                driver.findElement(By.xpath("//tr[td='cst499']")));
     }
+
+    @Test
+    public void testAddAssignment() throws InterruptedException {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Input year and semester data
+        WebElement yearInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("year")));
+        WebElement semesterInput = driver.findElement(By.id("semester"));
+
+        yearInput.sendKeys("2024");
+        semesterInput.sendKeys("Spring");
+
+        // Click on "Show Sections" link
+        WebElement showSectionsLink = driver.findElement(By.linkText("Show Sections"));
+        showSectionsLink.click();
+
+        // Assuming you land on the InstructorSectionView, wait for a section link to be clickable and click it
+        // Adjust this locator to find a specific section if necessary
+        WebElement viewAssignmentsLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View Assignments")));
+        viewAssignmentsLink.click();
+
+        // Now, on the AssignmentsView page, click to add an assignment
+        // Since AssignmentAdd is a form inside AssignmentsView, we directly work with the form here
+
+        // Wait for the assignment form's input elements to be available and interact with them
+        WebElement titleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[placeholder='Title']")));
+        WebElement dueDateInput = driver.findElement(By.cssSelector("input[type='date']"));
+
+        // Input sample data
+        titleInput.sendKeys("Test Assignment");
+        dueDateInput.sendKeys("09092023"); // Adjust format as needed
+
+        // Submit the form
+        WebElement addButton = driver.findElement(By.cssSelector("button[type='submit']"));
+        addButton.click();
+
+    }
+
+    @Test
+    public void testGradeAssignment() throws Exception {
+        // Define constants for sleep duration and the base URL of your application
+        final long SLEEP_DURATION = 1000; // Adjust as needed
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Assume steps to navigate to InstructorSectionsView are here...
+
+        // Navigate to the AssignmentsView by clicking the "View Assignments" link for a specific section
+        WebElement viewAssignmentsLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'View Assignments')]")));
+        viewAssignmentsLink.click();
+
+        // Click on a specific assignment to grade
+        WebElement gradeAssignmentLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Grade')]")));
+        gradeAssignmentLink.click();
+
+        // Assume we're now on a grading page where scores can be entered for each student
+        // For each student, find the score input and enter a score
+        List<WebElement> scoreInputs = driver.findElements(By.name("score"));
+        for (WebElement scoreInput : scoreInputs) {
+            scoreInput.sendKeys("90"); // Example score, adapt as necessary
+            Thread.sleep(SLEEP_DURATION); // To visually confirm the action, not recommended for actual tests
+        }
+
+        // Submit the scores
+        WebElement submitScoresButton = driver.findElement(By.name("score"));
+        submitScoresButton.click();
+
+        // Cleanup
+        Thread.sleep(SLEEP_DURATION); // To visually confirm before closing, not recommended for actual tests
+    }
+
 }
