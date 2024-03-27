@@ -3,6 +3,7 @@ package com.cst438.controller;
 import com.cst438.domain.Assignment;
 import com.cst438.domain.AssignmentRepository;
 import com.cst438.dto.AssignmentDTO;
+import com.cst438.dto.GradeDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,7 @@ public class AssignmentControllerUnitTest {
          assertEquals("Test Assignment",result.title());
 
     }
-    
+    @Test
     public void failCreateAssignment() throws Exception {
    	 MockHttpServletResponse response;
 
@@ -93,6 +94,69 @@ public class AssignmentControllerUnitTest {
         
         String message = response.getErrorMessage();
         assertEquals("Section not found", message);
+    }
+
+    /*  This test checks to make sure an error occurs when 
+     * a new assigment is created with a due date later than the
+     * end date of the class
+     */
+    @Test
+    public void failAssignmentInvalidDueDate() throws Exception {
+        MockHttpServletResponse response;
+
+       // 
+        AssignmentDTO assignment = new AssignmentDTO(
+                1,
+                "Test Assignment",
+                Date.valueOf("2101-01-01"),
+                "TestID",
+                1,
+                1
+        );
+        
+        response = mvc.perform(
+                MockMvcRequestBuilders
+                        .post("/assignments")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(assignment)))
+                .andReturn()
+                .getResponse();
+        // check the response code for 400 meaning FAIL
+        assertEquals(404, response.getStatus());
+        
+        String message = response.getErrorMessage();
+        assertEquals("Due date cannot be later than the session end date", message);
+
+   }
+    @Test
+    public void failGradeAssignment() throws Exception {
+        MockHttpServletResponse response;
+
+        //pass in 0 as the section id - an invalid ID number
+        GradeDTO grade = new GradeDTO(
+                3,
+                "Firstname Last",
+                "fLast@notreal.com",
+                "Title",
+                "cst238",
+                1,
+                70
+        );
+
+        response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/grades")
+                                .accept(MediaType.APPLICATION_JSON)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(asJsonString(grade)))
+                .andReturn()
+                .getResponse();
+        // check the response code for 400 meaning FAIL
+        assertEquals(404, response.getStatus());
+
+        String message = response.getErrorMessage();
+        assertEquals("Grade not found for ID: " + grade.gradeId(), message);
     }
     
     private static String asJsonString(final Object obj) {

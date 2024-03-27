@@ -86,7 +86,15 @@ public class AssignmentController {
 
         a.setTitle(dto.title());
         a.setSection(section);
+    
+        if(dto.dueDate().after(section.getTerm().getEndDate()))
+        {
+            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "Due date cannot be later than the session end date");
+        }
+
         a.setDueDate(dto.dueDate());
+        
+        
 
         assignmentRepository.save(a);
 
