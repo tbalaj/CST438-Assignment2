@@ -173,6 +173,22 @@ public class AssignmentController {
         return gradesDtoList;
     }
 
+    // Update a single grade
+    @PutMapping("/grade")
+    public void updateGrade(@RequestBody GradeDTO gradeDTO) {
+        //TODO: Check for instructor status
+
+        // Find the existing grade using the provided gradeId
+        Grade grade = gradeRepository.findById(gradeDTO.gradeId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found for ID: " + gradeDTO.gradeId()));
+
+        // Update the score of the existing grade
+        grade.setScore(gradeDTO.score());
+
+        // Save the updated grade back to the repository
+        gradeRepository.save(grade);
+    }
+
     @PutMapping("/grades")
     public void updateGrades(@RequestBody List<GradeDTO> dlist) {
         for (GradeDTO gradeDTO : dlist) {

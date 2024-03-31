@@ -284,9 +284,6 @@ public class SectionControllerSystemTest {
         WebElement viewAssignmentsLink = wait.until(ExpectedConditions.elementToBeClickable(By.linkText("View Assignments")));
         viewAssignmentsLink.click();
 
-        // Now, on the AssignmentsView page, click to add an assignment
-        // Since AssignmentAdd is a form inside AssignmentsView, we directly work with the form here
-
         // Wait for the assignment form's input elements to be available and interact with them
         WebElement titleInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[placeholder='Title']")));
         WebElement dueDateInput = driver.findElement(By.cssSelector("input[type='date']"));
@@ -304,34 +301,106 @@ public class SectionControllerSystemTest {
     @Test
     public void testGradeAssignment() throws Exception {
         // Define constants for sleep duration and the base URL of your application
-        final long SLEEP_DURATION = 1000; // Adjust as needed
+        final long SLEEP_DURATION = 2000; // Adjust as needed
 
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // Assume steps to navigate to InstructorSectionsView are here...
+        // Input year and semester data
+        WebElement yearInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("year")));
+        WebElement semesterInput = driver.findElement(By.id("semester"));
+
+        yearInput.sendKeys("2024");
+        semesterInput.sendKeys("Spring");
+
+        // Click on "Show Sections" link
+        WebElement showSectionsLink = driver.findElement(By.linkText("Show Sections"));
+        showSectionsLink.click();
 
         // Navigate to the AssignmentsView by clicking the "View Assignments" link for a specific section
         WebElement viewAssignmentsLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[contains(text(),'View Assignments')]")));
         viewAssignmentsLink.click();
 
-        // Click on a specific assignment to grade
-        WebElement gradeAssignmentLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(text(),'Grade')]")));
+        // Assert that we are on the right page, looking for a header or title that indicates it
+        WebElement assignmentsPageHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h3[contains(text(),'Assignments')]")));
+        assertTrue(assignmentsPageHeader.isDisplayed(), "We are not on the Assignments page.");
+
+        // Click on the 'Grade' button for assignment id 1
+        WebElement gradeAssignmentLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//tr[td/text()='1']/td/button[contains(text(),'Grade')]")));
         gradeAssignmentLink.click();
 
-        // Assume we're now on a grading page where scores can be entered for each student
-        // For each student, find the score input and enter a score
-        List<WebElement> scoreInputs = driver.findElements(By.name("score"));
-        for (WebElement scoreInput : scoreInputs) {
-            scoreInput.sendKeys("90"); // Example score, adapt as necessary
-            Thread.sleep(SLEEP_DURATION); // To visually confirm the action, not recommended for actual tests
-        }
+        // Assert that we are on the grading page for the correct assignment
+        WebElement gradingPageHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h3[contains(text(),'Grades for Assignment')]")));
+        assertTrue(gradingPageHeader.isDisplayed(), "We are not on the correct grading page.");
+
+        // Check the default value of the grade and store it
+        WebElement defaultGradeInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//tr[td/text()='1']/td/input[@name='score']")));
+        String defaultValue = defaultGradeInput.getAttribute("value");
+        assertEquals("95", defaultValue, "The default value of the grade is not 95.");
+
+        // Clear the default score and enter a new score of 90
+        defaultGradeInput.clear();
+        defaultGradeInput.sendKeys("90");
+        // Thread.sleep can be used for debugging but should not be used in actual test automation
 
         // Submit the scores
-        WebElement submitScoresButton = driver.findElement(By.name("score"));
+        WebElement submitScoresButton = driver.findElement(By.xpath("//button[@type='submit' and contains(text(), 'Update Grades')]"));
         submitScoresButton.click();
 
-        // Cleanup
-        Thread.sleep(SLEEP_DURATION); // To visually confirm before closing, not recommended for actual tests
+        // Switch to the alert box
+        Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+        alert.accept(); // Click the "OK" button on the alert box
+
+        // Wait for the alert to be dismissed and for the page to become interactive again
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath("//button[@type='submit' and contains(text(), 'Update Grades')]")));
+
+        // Wait for the "Grade" button to become clickable again for assignment id 1
+        gradeAssignmentLink = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//tr[td/text()='1']/td/button[contains(text(),'Grade')]")));
+        gradeAssignmentLink.click(); // Click the 'Grade' button for assignment id 1 again
+
+        // Wait for the grading page for the correct assignment to appear again
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h3[contains(text(),'Grades for Assignment')]")));
+
+        // Now, locate the input field for the grade that was updated to confirm it has the new value of "90"
+        WebElement updatedGradeInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//tr[td/text()='1']/td/input[@name='score']")));
+        String updatedValue = updatedGradeInput.getAttribute("value");
+        assertEquals("90", updatedValue, "The grade value was not updated successfully.");
+
+        // Cleanup. Follow a similar course of action using the UI to reset the grade back to 95
+        // After verifying that the score has been updated to 90, proceed to reset it back to 95
+        WebElement scoreInputToReset = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//tr[td/text()='1']/td/input[@name='score']")));
+        scoreInputToReset.clear();
+        scoreInputToReset.sendKeys("95");
+
+        // Submit the scores again to reset them
+        WebElement submitScoresButtonToReset = driver.findElement(By.xpath("//button[@type='submit' and contains(text(), 'Update Grades')]"));
+        submitScoresButtonToReset.click();
+
+        // Accept the alert that confirms the scores have been updated
+        wait.until(ExpectedConditions.alertIsPresent()).accept();
     }
+
+    @Test
+    public void testStudentEnrollment() throws Exception {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        // Wait for the sections to load and be visible on the page
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h3[contains(text(), 'Sections')]")));
+
+        // Assuming there's at least one open section to enroll in, click the "Enroll" button for the first section
+        WebElement enrollButton = driver.findElement(By.xpath("//button[contains(text(), 'Enroll')]"));
+        enrollButton.click();
+
+        // Wait for the message indicating success to be visible
+        WebElement successMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h4[contains(., 'Enrolled in Section')]")));
+
+        // Verify the success message
+        String expectedMessageStart = "Enrolled in Section"; // Adjust based on the actual message
+        assertTrue(successMessage.getText().startsWith(expectedMessageStart), "Enrollment was not successful.");
+
+        // Optional: Verify the enrollment by navigating to the schedule or transcript page and checking for the new enrollment
+
+        // Cleanup: Consider implementing cleanup logic if needed, especially if running this test could affect subsequent tests.
+    }
+
 
 }
