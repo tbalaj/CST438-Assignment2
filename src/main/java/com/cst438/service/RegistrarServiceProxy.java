@@ -32,10 +32,15 @@ public class RegistrarServiceProxy {
 
     @Autowired
     RabbitTemplate rabbitTemplate;
+    @Autowired
     CourseRepository courseRepository;
+    @Autowired
     TermRepository termRepository;
+    @Autowired
     UserRepository userRepository;
+    @Autowired
     SectionRepository sectionRepository;
+    @Autowired
     EnrollmentRepository enrollmentRepository;
 
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
