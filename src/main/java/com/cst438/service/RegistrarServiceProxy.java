@@ -226,6 +226,7 @@ public class RegistrarServiceProxy {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not within the enrollment period");
                     }
 
+                    e.setEnrollmentId(enrollmentAddDTO.enrollmentId());
                     e.setSection(section);
                     e.setGrade(null);
                     enrollmentRepository.save(e);
