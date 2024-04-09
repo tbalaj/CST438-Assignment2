@@ -3,6 +3,7 @@ package com.cst438.controller;
 
 import com.cst438.domain.*;
 import com.cst438.dto.EnrollmentDTO;
+import com.cst438.service.RegistrarServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,9 @@ public class EnrollmentController {
 
     @Autowired
     EnrollmentRepository enrollmentRepository;
+
+    @Autowired
+    RegistrarServiceProxy registrarService;
 
     // instructor downloads student enrollments for a section, ordered by student name
     // user must be instructor for the section
@@ -78,6 +82,7 @@ public class EnrollmentController {
             else {
                 f.setGrade(e.grade());
                 enrollmentRepository.save(f);
+                registrarService.updateEnrollmentGrade(e);
             }
         }
     }

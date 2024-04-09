@@ -2,6 +2,7 @@ package com.cst438.controller;
 
 import com.cst438.domain.*;
 import com.cst438.dto.*;
+import com.cst438.service.RegistrarServiceProxy;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class AssignmentController {
 
     @Autowired
     GradeRepository gradeRepository;
+
+    @Autowired
+    RegistrarServiceProxy registrarService;
 
     // instructor lists assignments for a section.  Assignments ordered by due date.
     // logged in user must be the instructor for the section
@@ -91,12 +95,13 @@ public class AssignmentController {
 
         a.setDueDate(dto.dueDate());
         
-        
+        AssignmentDTO assignmentDTO = new AssignmentDTO(a.getAssignmentId(), a.getTitle(), a.getDueDate(),
+                a.getSection().getCourse().getCourseId(), a.getSection().getSecId(), a.getSection().getSectionNo());
 
         assignmentRepository.save(a);
+        registrarService.createAssignment(assignmentDTO);
 
-        return new AssignmentDTO(a.getAssignmentId(), a.getTitle(), a.getDueDate(),
-                a.getSection().getCourse().getCourseId(), a.getSection().getSecId(), a.getSection().getSectionNo());
+        return assignmentDTO;
     }
 
     // update assignment for a section.  Only title and dueDate may be changed.
@@ -123,8 +128,12 @@ public class AssignmentController {
 
         Assignment updatedAssignment = assignmentRepository.save(assignment);
 
-        return new AssignmentDTO(updatedAssignment.getAssignmentId(), updatedAssignment.getTitle(), updatedAssignment.getDueDate(),
-                updatedAssignment.getSection().getCourse().getCourseId(), updatedAssignment.getSection().getSecId(), updatedAssignment.getSection().getSectionNo());
+        AssignmentDTO assignmentDTO = new AssignmentDTO(updatedAssignment.getAssignmentId(), updatedAssignment.getTitle(),
+                updatedAssignment.getDueDate(), updatedAssignment.getSection().getCourse().getCourseId(),
+                updatedAssignment.getSection().getSecId(), updatedAssignment.getSection().getSectionNo());
+
+        registrarService.updateAssignment(assignmentDTO);
+        return assignmentDTO;
     }
 
     // delete assignment for a section
@@ -141,6 +150,7 @@ public class AssignmentController {
         }
 
         assignmentRepository.deleteById(assignmentId);
+        registrarService.deleteAssignment(assignmentId);
 
     }
 
@@ -183,6 +193,7 @@ public class AssignmentController {
         grade.setScore(gradeDTO.score());
 
         // Save the updated grade back to the repository
+        registrarService.updateGrade(gradeDTO);
         gradeRepository.save(grade);
     }
 
@@ -196,7 +207,7 @@ public class AssignmentController {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found for ID: " + gradeDTO.gradeId()));
 
             grade.setScore(gradeDTO.score());
-
+            registrarService.updateGrade(gradeDTO);
             gradeRepository.save(grade);
         }
     }
