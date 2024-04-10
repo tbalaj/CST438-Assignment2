@@ -97,6 +97,7 @@ public class RegistrarServiceProxy {
                     sectionAdd.setTerm(term);
 
                     // Continue padding out section entity
+                    sectionAdd.setSectionNo(sectionAddDTO.secNo());
                     sectionAdd.setSecId(sectionAddDTO.secId());
                     sectionAdd.setBuilding(sectionAddDTO.building());
                     sectionAdd.setRoom(sectionAddDTO.room());
@@ -128,6 +129,7 @@ public class RegistrarServiceProxy {
                                 "section not found "+sectionUpdateDTO.secNo());
                     }
 
+                    sectionUpdate.setSectionNo(sectionUpdateDTO.secNo());
                     sectionUpdate.setSecId(sectionUpdateDTO.secId());
                     sectionUpdate.setBuilding(sectionUpdateDTO.building());
                     sectionUpdate.setRoom(sectionUpdateDTO.room());
@@ -156,10 +158,10 @@ public class RegistrarServiceProxy {
                 case "addUser":
                     UserDTO userAddDTO = fromJsonString(parts[1], UserDTO.class);
                     User userAdd = new User();
+                    userAdd.setId(userAddDTO.id());
                     userAdd.setName(userAddDTO.name());
                     userAdd.setEmail(userAddDTO.email());
 
-                    // create password and encrypt it
                     String password = userAddDTO.name()+"2024";
                     String enc_password = encoder.encode(password);
                     userAdd.setPassword(enc_password);
