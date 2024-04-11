@@ -267,6 +267,7 @@ public class RegistrarServiceProxy {
 
 
     private void sendMessage(String s) {
+        System.out.println("Gradebook to Register " + s);
         rabbitTemplate.convertAndSend(registrarServiceQueue.getName(), s);
     }
     private static String asJsonString(final Object obj) {
