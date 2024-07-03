@@ -2,7 +2,6 @@ package com.cst438.controller;
 
 import com.cst438.domain.*;
 import com.cst438.dto.EnrollmentDTO;
-import com.cst438.dto.GradeDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
-import java.util.function.ToDoubleBiFunction;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -159,7 +156,6 @@ public class StudentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "term doesn't exist");
         }
 
-        //LocalDate addDate = term.getAddDate().toLocalDate();
         Date addDate = term.getAddDate();
         Date addDeadLine = term.getAddDeadline();
         if(new Date().before(addDate)){
@@ -207,7 +203,6 @@ public class StudentController {
    public void dropCourse(@PathVariable("enrollmentId") int enrollmentId) {
 
        // TODO
-       // check that today is not after the dropDeadline for section
        Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElse(null);
        if(enrollment == null){
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid enrollment id.");
@@ -233,10 +228,11 @@ public class StudentController {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grade has already been given.");
        }
 
-       LocalDate dropDeadlineLD = term.getDropDeadline().toLocalDate();
-       if(LocalDate.now().compareTo(dropDeadlineLD)>0) {
+       Date dropDeadline = term.getDropDeadline();
+       if (new Date().after(dropDeadline)) {
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passed the drop deadline date.");
        }
+
        enrollmentRepository.delete(enrollment);
    }
 }
