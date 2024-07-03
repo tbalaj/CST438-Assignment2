@@ -54,20 +54,20 @@ public class StudentController {
        List<EnrollmentDTO> transcript = new ArrayList<EnrollmentDTO>();
        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId);
        for(Enrollment enrollment : enrollments) {
-           if(!enrollment.getStudent().getType().equals("STUDENT")){
+           if(!enrollment.getUser().getType().equals("STUDENT")){
                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "user is not a student");
-           } else if (studentId != enrollment.getStudent().getId()){
-               throw new ReponseStatusException(HttpStatus.BAD_REQUEST, "user is not a student id does not match");
+           } else if (studentId != enrollment.getUser().getId()){
+               throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "user is not a student id does not match");
            }
            transcript.add(
                    new EnrollmentDTO(
                            enrollment.getEnrollmentId(),
                            enrollment.getGrade(),
-                           enrollment.getStudent().getId(),
-                           enrollment.getStudent().getName(),
-                           enrollment.getStudent().getEmail(),
+                           enrollment.getUser().getId(),
+                           enrollment.getUser().getName(),
+                           enrollment.getUser().getEmail(),
                            enrollment.getSection().getCourse().getCourseId(),
-                           enrollment.getSection().getCourse.getTitle(),
+                           enrollment.getSection().getCourse().getTitle(),
                            enrollment.getSection().getSecId(),
                            enrollment.getSection().getSectionNo(),
                            enrollment.getSection().getBuilding(),
@@ -95,18 +95,18 @@ public class StudentController {
        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, studentId);
 
        for(Enrollment enrollment : enrollments) {
-           if(!enrollment.getStudent.getType().equals("STUDENT")){
+           if(!enrollment.getUser().getType().equals("STUDENT")){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "user is not a student");
-           } else if (studentId != enrollment.getStudent().getId()) {
-               throw new ReponseStatusException(HttpStatus.BAD_REQUEST, "student id does not match");
+           } else if (studentId != enrollment.getUser().getId()) {
+               throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "student id does not match");
            }
            schedule.add(
                    new EnrollmentDTO(
                            enrollment.getEnrollmentId(),
                            enrollment.getGrade(),
-                           enrollment.getStudent().getId(),
-                           enrollment.getStudent().getName(),
-                           enrollment.getStudent().getEmail(),
+                           enrollment.getUser().getId(),
+                           enrollment.getUser().getName(),
+                           enrollment.getUser().getEmail(),
                            enrollment.getSection().getCourse().getCourseId(),
                            enrollment.getSection().getCourse().getTitle(),
                            enrollment.getSection().getSecId(),
@@ -116,7 +116,7 @@ public class StudentController {
                            enrollment.getSection().getTimes(),
                            enrollment.getSection().getCourse().getCredits(),
                            enrollment.getSection().getTerm().getYear(),
-                           enrollment.getSection().getTerm().getSenester()
+                           enrollment.getSection().getTerm().getSemester()
                    )
            );
        }
@@ -151,12 +151,12 @@ public class StudentController {
 
         Section section = sectionRepository.findById(sectionNo).orElse(null);
         if(section == null){
-            throw new ResponseStatusException(HtppStatus.BAD_REQUEST, "section not valid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "section not valid");
         }
 
         Term term = termRepository.findById(section.getTerm().getTermId()).orElse(null);
         if(term == null){
-            throw new ReponseStatusException(HttpStatus.BAD_REQUEST, "term doesn't exist");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "term doesn't exist");
         }
 
         //LocalDate addDate = term.getAddDate().toLocalDate();
@@ -166,29 +166,29 @@ public class StudentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Can't add prior to add date");
         }
         if(new Date().after(addDeadLine)){
-            throw new ReponseStatusException(HttpStatus.BAD_REQUEST, "You missed the dead line!");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You missed the dead line!");
         }
 
         Enrollment enrollExist = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, studentId);
         if(enrollExist != null){
-            throw new ReponseStatusException(HttpStatus.BAD_REQUEST, "Already enrolled");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already enrolled");
         }
 
         Enrollment enrollment = new Enrollment();
         enrollment.setGrade(null);
-        enrollment.setStudent(user);
+        enrollment.setUser(user);
         enrollment.setSection(section);
 
         // remove the following line when done.
         return new EnrollmentDTO(
                 enrollment.getEnrollmentId(),
                 enrollment.getGrade(),
-                enrollment.getStudent().getId(),
-                enrollment.getStudent().getName(),
-                enrollment.getStudent().getEmail(),
+                enrollment.getUser().getId(),
+                enrollment.getUser().getName(),
+                enrollment.getUser().getEmail(),
                 enrollment.getSection().getCourse().getCourseId(),
                 enrollment.getSection().getCourse().getTitle(),
-                enrollment.getSection().SecId(),
+                enrollment.getSection().getSecId(),
                 enrollment.getSection().getSectionNo(),
                 enrollment.getSection().getBuilding(),
                 enrollment.getSection().getRoom(),
@@ -208,5 +208,35 @@ public class StudentController {
 
        // TODO
        // check that today is not after the dropDeadline for section
+       Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElse(null);
+       if(enrollment == null){
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid enrollment id.");
+       }
+
+       Section section = sectionRepository.findById(enrollment.getSection().getSectionNo()).orElse(null);
+       if (section == null) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Not a valid section number.");
+       }
+
+       Term term = termRepository.findById(section.getTerm().getTermId()).orElse(null);
+       if (term == null) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid term.");
+       }
+
+       User user = userRepository.findById(enrollment.getUser().getId()).orElse(null);
+       if(user == null){
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid user id.");
+       }
+
+       Grade grade = gradeRepository.findByEnrollmentId(enrollment.getEnrollmentId());
+       if (grade != null) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grade has already been given.");
+       }
+
+       LocalDate dropDeadlineLD = term.getDropDeadline().toLocalDate();
+       if(LocalDate.now().compareTo(dropDeadlineLD)>0) {
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passed the drop deadline date.");
+       }
+       enrollmentRepository.delete(enrollment);
    }
 }
