@@ -174,6 +174,7 @@ public class StudentController {
         enrollment.setGrade(null);
         enrollment.setUser(user);
         enrollment.setSection(section);
+        enrollmentRepository.save(enrollment);
 
         // remove the following line when done.
         return new EnrollmentDTO(

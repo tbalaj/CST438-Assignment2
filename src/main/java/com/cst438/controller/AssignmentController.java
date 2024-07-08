@@ -62,7 +62,10 @@ public class AssignmentController {
             @RequestBody AssignmentDTO dto) {
         // TODO add error checks
         Assignment newAssignment = new Assignment();
-        Section newSection = sectionRepository.findById(dto.secId()).orElse(null);
+        Section newSection = sectionRepository.findById(dto.secNo()).orElse(null);
+        if (newSection == null ){
+            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "section not found ");
+        }
         newAssignment.setDue_Date(java.sql.Date.valueOf(dto.dueDate()));
         newAssignment.setSection(newSection);
         newAssignment.setTitle(dto.title());
@@ -83,6 +86,9 @@ public class AssignmentController {
     @PutMapping("/assignments")
     public AssignmentDTO updateAssignment(@RequestBody AssignmentDTO dto) {
         Assignment assignment = assignmentRepository.findById(dto.id()).orElse(null);
+        if (assignment == null ){
+            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "assignment not found ");
+        }
         assignment.setTitle(dto.title());
         Date dueDate = java.sql.Date.valueOf(dto.dueDate());
         assignment.setDue_Date(dueDate);
