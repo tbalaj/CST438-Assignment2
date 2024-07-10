@@ -128,8 +128,7 @@ public class AssignmentController {
 
         Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
         if (assignment == null) {
-            // TODO throw exception
-            return null;
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
         }
 
         // get the list of enrollments for the section related to this assignment.
@@ -211,7 +210,8 @@ public class AssignmentController {
                             assignment.getDueDate(),
                             assignment.getSection().getCourse().getTitle(),
                             assignment.getSection().getSecId(),
-                            g.getScore());
+                            g!= null? g.getScore(): null
+                            );
                 }).toList();
         return dto;
     }
