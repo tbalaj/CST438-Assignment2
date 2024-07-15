@@ -1,19 +1,32 @@
 package com.cst438.controller;
 
-import com.cst438.domain.*;
+import java.sql.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.cst438.domain.Assignment;
+import com.cst438.domain.AssignmentRepository;
+import com.cst438.domain.Enrollment;
+import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.Grade;
+import com.cst438.domain.GradeRepository;
+import com.cst438.domain.Section;
+import com.cst438.domain.SectionRepository;
 import com.cst438.dto.AssignmentDTO;
 import com.cst438.dto.AssignmentStudentDTO;
 import com.cst438.dto.GradeDTO;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -60,16 +73,24 @@ public class AssignmentController {
     @PostMapping("/assignments")
     public AssignmentDTO createAssignment(
             @RequestBody AssignmentDTO dto) {
-        // TODO add error checks
         Assignment newAssignment = new Assignment();
         Section newSection = sectionRepository.findById(dto.secNo()).orElse(null);
-        if (newSection == null ){
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "section not found ");
+        if (newSection == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "section not found");
+        } 
+        Date dueDate = Date.valueOf(dto.dueDate());
+        Date starDate = newSection.getTerm().getStartDate();
+        Date endDate = newSection.getTerm().getEndDate();
+        
+        if(dueDate.after(endDate) || dueDate.before(starDate)){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "due date not within course dates");
         }
+
         newAssignment.setDue_Date(java.sql.Date.valueOf(dto.dueDate()));
         newAssignment.setSection(newSection);
         newAssignment.setTitle(dto.title());
         Assignment response = assignmentRepository.save(newAssignment);
+
         return new AssignmentDTO(
                 response.getAssignmentId(),
                 response.getTitle(),
@@ -77,7 +98,6 @@ public class AssignmentController {
                 response.getSection().getCourse().getCourseId(),
                 response.getSection().getSecId(),
                 response.getSection().getSectionNo());
-        // return null;
     }
 
     // update assignment for a section. Only title and dueDate may be changed.
@@ -86,8 +106,8 @@ public class AssignmentController {
     @PutMapping("/assignments")
     public AssignmentDTO updateAssignment(@RequestBody AssignmentDTO dto) {
         Assignment assignment = assignmentRepository.findById(dto.id()).orElse(null);
-        if (assignment == null ){
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "assignment not found ");
+        if (assignment == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "assignment not found ");
         }
         assignment.setTitle(dto.title());
         Date dueDate = java.sql.Date.valueOf(dto.dueDate());
@@ -130,7 +150,6 @@ public class AssignmentController {
         if (assignment == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
         }
-
         // get the list of enrollments for the section related to this assignment.
         // hint: use te enrollment repository method
         // findEnrollmentsBySectionOrderByStudentName.
@@ -210,8 +229,7 @@ public class AssignmentController {
                             assignment.getDueDate(),
                             assignment.getSection().getCourse().getTitle(),
                             assignment.getSection().getSecId(),
-                            g!= null? g.getScore(): null
-                            );
+                            g != null ? g.getScore() : null);
                 }).toList();
         return dto;
     }
