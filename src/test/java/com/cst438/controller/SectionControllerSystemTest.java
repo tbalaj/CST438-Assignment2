@@ -134,7 +134,8 @@ public class SectionControllerSystemTest {
         assertTrue(message.startsWith("section added"));
 
         // close the dialog
-        driver.findElement(By.id("close")).click();
+        // commented out becuase using assignment 3 solution which auto closes dialog
+        // driver.findElement(By.id("close")).click();
 
         // verify that new Section shows up on Sections list
         // find the row for cst499
@@ -229,9 +230,33 @@ public class SectionControllerSystemTest {
         String message = msg.getText();
         assertEquals("course not found cst599", message);
 
+        // MODIFIED BECAUSE ASSIGNMENT 3 solution closes dialog. re-enter info as before with valid values.
         // clear the courseId field and enter cst499
-        WebElement courseId = driver.findElement(By.id("ecourseId"));
-        courseId.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+        // WebElement courseId = driver.findElement(By.id("ecourseId"));
+        // courseId.sendKeys(Keys.chord(Keys.CONTROL,"a", Keys.DELETE));
+
+               // find and click button to add a section
+       driver.findElement(By.id("addSection")).click();
+       Thread.sleep(SLEEP_DURATION);
+
+       // enter data
+       //  courseId: cst599
+      driver.findElement(By.id("ecourseId")).sendKeys("cst499");
+       //  secId: 1,
+       driver.findElement(By.id("esecId")).sendKeys("1");
+       //  year:2024,
+       driver.findElement(By.id("eyear")).sendKeys("2024");
+       //  semester:Spring,
+       driver.findElement(By.id("esemester")).sendKeys("Spring");
+       //  building:052,
+       driver.findElement(By.id("ebuilding")).sendKeys("052");
+       //  room:104,
+       driver.findElement(By.id("eroom")).sendKeys("104");
+       //  times:W F 1:00-2:50 pm,
+       driver.findElement(By.id("etimes")).sendKeys("W F 1:00-2:50 pm");
+       //  instructorEmail jgross@csumb.edu
+       driver.findElement(By.id("einstructorEmail")).sendKeys("jgross@csumb.edu");
+       // click Save
        Thread.sleep(SLEEP_DURATION);
         courseId.sendKeys("cst499");
         driver.findElement(By.id("save")).click();
@@ -240,9 +265,9 @@ public class SectionControllerSystemTest {
        message = driver.findElement(By.id("addMessage")).getText();
        assertTrue(message.startsWith("section added"));
 
-       // close the dialog
-       driver.findElement(By.id("close")).click();
-       Thread.sleep(SLEEP_DURATION);
+       // close the dialog automaticaly in 
+    //    driver.findElement(By.id("close")).click();
+    //    Thread.sleep(SLEEP_DURATION);
 
         WebElement row = driver.findElement(By.xpath("//tr[td='cst499']"));
         assertNotNull(row);

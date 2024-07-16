@@ -33,7 +33,7 @@ public class SectionController {
 
         Course course = courseRepository.findById(section.courseId()).orElse(null);
         if (course == null ){
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "course not found "+section.courseId());
+            throw  new ResponseStatusException( HttpStatus.BAD_REQUEST, "course not found "+section.courseId());
         }
         Section s = new Section();
         s.setCourse(course);
@@ -55,7 +55,7 @@ public class SectionController {
         } else {
             instructor = userRepository.findByEmail(section.instructorEmail());
             if (instructor == null || !instructor.getType().equals("INSTRUCTOR")) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "email not found or not an instructor " + section.instructorEmail());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email not found or not an instructor " + section.instructorEmail());
             }
             s.setInstructor_email(section.instructorEmail());
         }
