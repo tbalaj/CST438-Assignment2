@@ -5,6 +5,7 @@ import com.cst438.domain.*;
 import com.cst438.dto.EnrollmentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -96,6 +97,26 @@ public class EnrollmentController {
             }
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error updating grades", e);
+        }
+    }
+
+    @PostMapping("/enrollments")
+    public ResponseEntity<?> enrollStudent(@RequestBody EnrollmentDTO enrollmentDTO) {
+        try {
+            Section section = sectionRepository.findById(enrollmentDTO.sectionId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found"));
+
+            User student = userRepository.findById(enrollmentDTO.studentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+
+            Enrollment enrollment = new Enrollment();
+            enrollment.setSection(section);
+            enrollment.setUser(student);
+            enrollmentRepository.save(enrollment);
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error enrolling student", e);
         }
     }
 

@@ -2,9 +2,11 @@ package com.cst438.controller;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -188,18 +190,30 @@ public class AssignmentController {
     // instructor uploads grades for assignment
     // user must be instructor for the section
     @PutMapping("/grades")
-    public void updateGrades(@RequestBody List<GradeDTO> dlist) {
+    public ResponseEntity<String> updateGrades(@RequestBody List<GradeDTO> dlist) {
+        // List to collect invalid grade IDs
+        List<Integer> invalidGradeIds = dlist.stream()
+                .filter(grade -> !gradeRepository.existsById(grade.gradeId()))
+                .map(GradeDTO::gradeId)
+                .collect(Collectors.toList());
 
-        // for each grade in the GradeDTO list, retrieve the grade entity
-        dlist.forEach(grade -> {
-            Grade g = gradeRepository.findById(grade.gradeId()).orElse(null);
-            if (g != null) {
-                // update the score and save the entity
-                g.setScore(grade.score());
-                gradeRepository.save(g);
+        if (!invalidGradeIds.isEmpty()) {
+            // Return 400 Bad Request if any grade ID is invalid
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid grade IDs: " + invalidGradeIds);
+        }
+
+        // Update valid grades
+        dlist.forEach(gradeDTO -> {
+            Grade grade = gradeRepository.findById(gradeDTO.gradeId()).orElse(null);
+            if (grade != null) {
+                grade.setScore(gradeDTO.score());
+                gradeRepository.save(grade);
             }
         });
 
+        // Return 200 OK if all grades were updated successfully
+        return ResponseEntity.ok("Grades updated successfully");
     }
 
     // student lists their assignments/grades for an enrollment ordered by due date

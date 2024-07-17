@@ -160,4 +160,33 @@ public class AssignmentControllerUnitTest {
     // instructor grades an assignment and enters scores for all enrolled students
     // and uploads the scores
 
+
+    @Test
+    public void gradeInvalidAssignment() throws Exception {
+        // List with an invalid grade ID
+        List<GradeDTO> gradedAssignments = List.of(new GradeDTO(
+                -1, // Invalid gradeId
+                "John Doe",
+                "john.doe@example.com",
+                "Invalid Assignment",
+                "cst363",
+                1,
+                90));
+
+        MockHttpServletResponse response = mvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/grades")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(gradedAssignments)))
+                .andReturn().getResponse();
+
+        // Log response details for debugging
+        System.out.println("Response Status: " + response.getStatus());
+        System.out.println("Response Content: " + response.getContentAsString());
+
+        assertEquals(400, response.getStatus());
+        assertTrue(response.getContentAsString().contains("Invalid grade IDs"));
+    }
+
+
 }
