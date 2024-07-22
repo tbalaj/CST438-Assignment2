@@ -258,7 +258,7 @@ public class SectionControllerSystemTest {
        driver.findElement(By.id("einstructorEmail")).sendKeys("jgross@csumb.edu");
        // click Save
        Thread.sleep(SLEEP_DURATION);
-        courseId.sendKeys("cst499");
+        // courseId.sendKeys("cst499");
         driver.findElement(By.id("save")).click();
         Thread.sleep(SLEEP_DURATION);
 
