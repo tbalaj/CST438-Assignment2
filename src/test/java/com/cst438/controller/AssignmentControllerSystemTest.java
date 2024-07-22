@@ -19,7 +19,8 @@ public class AssignmentControllerSystemTest {
     // of the Chrome driver.
     // for WinOS the file name will be chromedriver.exe
     // for MacOS the file name will be chromedriver
-    public static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win32/chromedriver.exe";
+    public static final String CHROME_DRIVER_FILE_LOCATION =
+            "C:/Users/saryn/Desktop/chromedriver-win64/chromedriver-win64/chromedriver.exe";
 
     // public static final String CHROME_DRIVER_FILE_LOCATION =
     // "~/chromedriver_macOS/chromedriver";
@@ -115,6 +116,7 @@ public class AssignmentControllerSystemTest {
         Thread.sleep(SLEEP_DURATION);
         // Click on first entry
         driver.findElements(By.xpath("//tr/td/a[contains(@href, '/assignments')]")).get(0).click();
+        Thread.sleep(SLEEP_DURATION);
         // Click on Grade the first assignment
         driver.findElements(By.xpath("//tbody//button[text()='Grade']")).get(0).click();
         // Populate dialog Popup
