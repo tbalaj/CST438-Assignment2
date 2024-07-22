@@ -53,7 +53,7 @@ public class StudentControllerEnrollUnitTest {
         assertEquals(400, response.getStatus());
         String message = response.getErrorMessage();
 
-        assertEquals("section not valid", message);
+        assertEquals("Section not valid", message);
 
 
         Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(secNo, studentId);
@@ -101,7 +101,7 @@ public class StudentControllerEnrollUnitTest {
         assertEquals(400, response.getStatus());
 
         String message = response.getErrorMessage();
-        assertEquals("You missed the dead line!", message);
+        assertEquals("You missed the deadline!", message);
 
         e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(secNo, studentId);
 

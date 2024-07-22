@@ -18,7 +18,10 @@ public class SectionControllerSystemTest {
     //  for WinOS the file name will be chromedriver.exe
     //  for MacOS the file name will be chromedriver
     public static final String CHROME_DRIVER_FILE_LOCATION =
-            "C:/chromedriver_win32/chromedriver.exe";
+            "C:/Users/saryn/Desktop/chromedriver-win64/chromedriver-win64/chromedriver.exe";
+
+    // public static final String CHROME_DRIVER_FILE_LOCATION =
+    //         "C:/chromedriver_win32/chromedriver.exe";
 
     //public static final String CHROME_DRIVER_FILE_LOCATION =
     //        "~/chromedriver_macOS/chromedriver";
@@ -258,7 +261,7 @@ public class SectionControllerSystemTest {
        driver.findElement(By.id("einstructorEmail")).sendKeys("jgross@csumb.edu");
        // click Save
        Thread.sleep(SLEEP_DURATION);
-        courseId.sendKeys("cst499");
+        // courseId.sendKeys("cst499");
         driver.findElement(By.id("save")).click();
         Thread.sleep(SLEEP_DURATION);
 
