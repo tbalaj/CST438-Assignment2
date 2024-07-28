@@ -28,11 +28,11 @@ public class StudentController {
     @Autowired
     TermRepository termRepository;
 
-    @Autowired
-    GradeRepository gradeRepository;
+    // @Autowired
+    // GradeRepository gradeRepository;
 
-    @Autowired
-    AssignmentRepository assignmentRepository;
+    // @Autowired
+    // AssignmentRepository assignmentRepository;
 
 
 
@@ -216,11 +216,11 @@ public class StudentController {
        if(user == null){
            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid user id.");
        }
-
-       Grade grade = gradeRepository.findByEnrollmentId(enrollment.getEnrollmentId());
-       if (grade != null) {
-           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grade has already been given.");
-       }
+// TODO FIX ME assignment 6
+    //    Grade grade = gradeRepository.findByEnrollmentId(enrollment.getEnrollmentId());
+    //    if (grade != null) {
+    //        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Grade has already been given.");
+    //    }
 
        Date dropDeadline = term.getDropDeadline();
        if (new Date().after(dropDeadline)) {
