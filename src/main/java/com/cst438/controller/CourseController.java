@@ -3,6 +3,8 @@ package com.cst438.controller;
 import com.cst438.domain.*;
 import com.cst438.dto.CourseDTO;
 import com.cst438.dto.SectionDTO;
+import com.cst438.service.GradebookServiceProxy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-
 
 /*
  * Controller for managing courses and sections.
@@ -34,6 +35,8 @@ public class CourseController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    GradebookServiceProxy gradeBookService;
 
     // ADMIN function to create a new course
     @PostMapping("/courses")
@@ -42,29 +45,31 @@ public class CourseController {
         c.setCredits(course.credits());
         c.setTitle(course.title());
         c.setCourseId(course.courseId());
-        courseRepository.save(c);
-        return new CourseDTO(
-                c.getCourseId(),
-                c.getTitle(),
-                c.getCredits()
-        );
+        Course savedCourse = courseRepository.save(c);
+        CourseDTO newCourse = new CourseDTO(
+                savedCourse.getCourseId(),
+                savedCourse.getTitle(),
+                savedCourse.getCredits());
+        gradeBookService.addCourse(newCourse);
+        return newCourse;
     }
 
     // ADMIN function to update a course
     @PutMapping("/courses")
     public CourseDTO updateCourse(@RequestBody CourseDTO course) {
         Course c = courseRepository.findById(course.courseId()).orElse(null);
-        if (c==null) {
-            throw  new ResponseStatusException( HttpStatus.NOT_FOUND, "course not found "+course.courseId());
+        if (c == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "course not found " + course.courseId());
         } else {
             c.setTitle(course.title());
             c.setCredits(course.credits());
-            courseRepository.save(c);
-            return new CourseDTO(
-                    c.getCourseId(),
-                    c.getTitle(),
-                    c.getCredits()
-            );
+            Course savedCourse = courseRepository.save(c);
+            CourseDTO newCourse = new CourseDTO(
+                    savedCourse.getCourseId(),
+                    savedCourse.getTitle(),
+                    savedCourse.getCredits());
+            gradeBookService.updateCourse(course);
+            return newCourse;
         }
     }
 
@@ -74,8 +79,14 @@ public class CourseController {
     public void deleteCourse(@PathVariable String courseid) {
         Course c = courseRepository.findById(courseid).orElse(null);
         // if course does not exist, do nothing.
-        if (c!=null) {
+        if (c != null) {
             courseRepository.delete(c);
+            CourseDTO newCourse = new CourseDTO(
+                    c.getCourseId(),
+                    c.getTitle(),
+                    c.getCredits());
+            gradeBookService.deleteCourse(newCourse);
+
         }
     }
 
@@ -93,6 +104,5 @@ public class CourseController {
     public List<Term> getAllTerms() {
         return termRepository.findAllByOrderByTermIdDesc();
     }
-
 
 }

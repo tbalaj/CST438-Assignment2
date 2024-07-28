@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
+import com.cst438.domain.Enrollment;
+import com.cst438.domain.EnrollmentRepository;
 import com.cst438.dto.CourseDTO;
 import com.cst438.dto.EnrollmentDTO;
 import com.cst438.dto.SectionDTO;
@@ -17,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 @Service
 public class GradebookServiceProxy {
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
     Queue gradebookServiceQueue = new Queue("gradebook_service", true);
 
     @Bean
@@ -29,7 +33,33 @@ public class GradebookServiceProxy {
 
     @RabbitListener(queues = "registrar_service")
     public void receiveFromGradebook(String message) {
-        // TODO implement this message
+        String[] parts = message.split(" ", 1);
+        String action = parts[0];
+        String data = parts[1];
+        try {
+
+            switch (action) {
+                case "updatedEnrollment" -> {
+                    EnrollmentDTO updateDTO = fromJsonString(data, EnrollmentDTO.class);
+                    Enrollment e = enrollmentRepository.findById(updateDTO.enrollmentId()).orElse(null);
+
+                    if (e != null) {
+                        e.setGrade(updateDTO.grade());
+                        enrollmentRepository.save(e);
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error Processing Request " + message + "\n w/ error\n" + e);
+
+        }
+
+    }
+
+    private void sendMessage(String s) {
+        System.out.println("Sending: " + s);
+        rabbitTemplate.convertAndSend(gradebookServiceQueue.getName(), s);
     }
 
     public void addCourse(CourseDTO c) {
@@ -78,11 +108,6 @@ public class GradebookServiceProxy {
 
     public void updateEnrollment(EnrollmentDTO e) {
         sendMessage("updatedEnrollment " + asJsonString(e));
-    }
-
-    private void sendMessage(String s) {
-        System.out.println("Sending: " + s);
-        rabbitTemplate.convertAndSend(gradebookServiceQueue.getName(), s);
     }
 
     private static String asJsonString(final Object obj) {
