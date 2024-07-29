@@ -47,6 +47,16 @@
 			<artifactId>spring-security-crypto</artifactId>
 			<version>3.1.0.RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.amqp</groupId>
+			<artifactId>spring-rabbit-test</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- end rabbitmq -->
 		<!-- for selenium -->
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
@@ -58,6 +68,9 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- end selenium -->
+		<!-- for rabbitmq -->
+
+
 	</dependencies>
 
 	<build>
