@@ -1,5 +1,6 @@
 package com.cst438.service;
 
+import com.cst438.controller.EnrollmentController;
 import com.cst438.domain.*;
 import com.cst438.dto.CourseDTO;
 import com.cst438.dto.EnrollmentDTO;
@@ -39,31 +40,26 @@ public class RegistrarServiceProxy {
     @Autowired
     TermRepository termRepository;
 
-    @RabbitListener(queues = "gradebook_service")
-    public void receiveFromRegistrar(String message)  {
-        //TODO implement this message
-    }
-
     // Added code to the file
     @RabbitListener(queues = "gradebook_service")
     public void receiveFromRegister(String message){
-        String[] parts = message.split(" ", 1);
+        String[] parts = message.split(" ", 2);
         String action = parts[0];
         String data = parts[1];
 
         try{
             switch (action) {
-                case "addCourse" -> addCourse(data);
-                case "updateCourse" -> updateCourse(data);
-                case "deleteCourse" -> deleteCourse(data);
-                case "addSection" -> addSection(data);
-                case "updateSection" -> updateSection(data);
-                case "deleteSection" -> deleteSection(data);
-                case "addUser" -> addUser(data);
-                case "updateUser" -> updateUser(data);
-                case "deleteUser" -> deleteUser(data);
-                case "addEnrollment" -> addEnrollment(data);
-                case "deleteEnrollment" -> deleteEnrollment(data);
+                case "addedCourse" -> addCourse(data);
+                case "updatexCourse" -> updateCourse(data);
+                case "deletedCourse" -> deleteCourse(data);
+                case "addedSection" -> addSection(data);
+                case "updatedSection" -> updateSection(data);
+                case "deletedSection" -> deleteSection(data);
+                case "addedUser" -> addUser(data);
+                case "updatedUser" -> updateUser(data);
+                case "deletedUser" -> deleteUser(data);
+                case "addedEnrollment" -> addEnrollment(data);
+                case "deletedEnrollment" -> deleteEnrollment(data);
                 default -> throw new IllegalArgumentException("Unknown instruction: " + action);
             }
         }catch (Exception e){
@@ -71,7 +67,7 @@ public class RegistrarServiceProxy {
         }
     }
 
-    private void addCourse(String data) throws Exception {
+    public void addCourse(String data) throws Exception {
         CourseDTO dto = fromJsonString(data, CourseDTO.class);
         Course course = new Course();
         course.setCredits(dto.credits());
@@ -80,7 +76,7 @@ public class RegistrarServiceProxy {
         courseRepository.save(course);
     }
 
-    private void updateCourse(String data) throws Exception {
+    public void updateCourse(String data) throws Exception {
         CourseDTO dto = fromJsonString(data, CourseDTO.class);
         Course course = courseRepository.findById(dto.courseId()).orElseThrow(() -> new Exception("Course not found: " + dto.courseId()));
         course.setCredits(dto.credits());
@@ -88,7 +84,7 @@ public class RegistrarServiceProxy {
         courseRepository.save(course);
     }
 
-    private void deleteCourse(String data) throws Exception {
+    public void deleteCourse(String data) throws Exception {
         if(courseRepository.existsById(data)) {
             courseRepository.deleteById(data);
         }else{
@@ -96,7 +92,7 @@ public class RegistrarServiceProxy {
         }
     }
 
-    private void addSection(String data) throws Exception {
+    public void addSection(String data) throws Exception {
         SectionDTO sectionDTO = fromJsonString(data, SectionDTO.class);
         Course course = courseRepository.findById(sectionDTO.courseId()).orElseThrow(() -> new Exception("Course not found: " + sectionDTO.courseId()));
         Term term = termRepository.findByYearAndSemester(sectionDTO.year(), sectionDTO.semester());
@@ -124,7 +120,7 @@ public class RegistrarServiceProxy {
         sectionRepository.save(section);
     }
 
-    private void updateSection(String data) throws Exception {
+    public void updateSection(String data) throws Exception {
         SectionDTO sectionDTO = fromJsonString(data, SectionDTO.class);
         Section section = sectionRepository.findById(sectionDTO.secNo()).orElseThrow(() -> new Exception("Section not found: " + sectionDTO.secNo()));
         section.setSecId(sectionDTO.secId());
@@ -142,7 +138,7 @@ public class RegistrarServiceProxy {
         sectionRepository.save(section);
     }
 
-    private void deleteSection(String data) throws Exception {
+    public void deleteSection(String data) throws Exception {
         try {
             Integer id = Integer.parseInt(data);
             sectionRepository.deleteById(id);
@@ -151,7 +147,7 @@ public class RegistrarServiceProxy {
         }
     }
 
-    private void addUser(String data) throws Exception {
+    public void addUser(String data) throws Exception {
         UserDTO dto = fromJsonString(data, UserDTO.class);
         User user = new User();
         user.setId(dto.id());
@@ -166,7 +162,7 @@ public class RegistrarServiceProxy {
         userRepository.save(user);
     }
 
-    private void updateUser(String data) throws Exception{
+    public void updateUser(String data) throws Exception{
         UserDTO dto = fromJsonString(data, UserDTO.class);
         User user = userRepository.findById(dto.id()).orElseThrow(() -> new Exception("User not found: " + dto.id()));
         user.setName(dto.name());
@@ -179,7 +175,7 @@ public class RegistrarServiceProxy {
         userRepository.save(user);
     }
 
-    private void deleteUser(String data) throws Exception {
+    public void deleteUser(String data) throws Exception {
         try {
             Integer id = Integer.parseInt(data);
             userRepository.deleteById(id);
@@ -188,7 +184,7 @@ public class RegistrarServiceProxy {
         }
     }
 
-    private void addEnrollment(String data) throws Exception{
+    public void addEnrollment(String data) throws Exception{
         EnrollmentDTO dto = fromJsonString(data, EnrollmentDTO.class);
         User student = userRepository.findById(dto.studentId()).orElseThrow(() -> new Exception("Student not found: " + dto.studentId()));
         Section section = sectionRepository.findById(dto.sectionNo()).orElseThrow(() -> new Exception("Section not found: " + dto.sectionNo()));
@@ -200,13 +196,18 @@ public class RegistrarServiceProxy {
         enrollmentRepository.save(enrollment);
     }
 
-    private void deleteEnrollment(String data) throws Exception{
+    public void deleteEnrollment(String data) throws Exception{
         try {
             Integer id = Integer.parseInt(data);
             enrollmentRepository.deleteById(id);
         } catch (NumberFormatException e) {
             throw new Exception("Invalid enrollment ID: " + data);
         }
+    }
+
+    public void updateEnrollment(EnrollmentDTO eDTO) {
+        String msg = "updateEnrollment " + asJsonString(eDTO);
+        sendMessage(msg);
     }
 
     //check if it's a correct user

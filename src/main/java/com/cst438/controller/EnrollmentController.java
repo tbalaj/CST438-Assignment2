@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import com.cst438.service.RegistrarServiceProxy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,9 @@ public class EnrollmentController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    RegistrarServiceProxy registrarServiceProxy;
 
     @Autowired
     private CourseRepository courseRepository;
@@ -94,6 +98,7 @@ public class EnrollmentController {
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
                 enrollment.setGrade(dto.grade());
                 enrollmentRepository.save(enrollment);
+                registrarServiceProxy.updateEnrollment(dto); // ?
             }
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error updating grades", e);
