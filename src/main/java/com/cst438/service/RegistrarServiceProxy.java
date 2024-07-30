@@ -47,6 +47,8 @@ public class RegistrarServiceProxy {
         String action = parts[0];
         String data = parts[1];
 
+        System.out.println("Receiving: " + message);
+
         try{
             switch (action) {
                 case "addedCourse" -> addCourse(data);
@@ -222,8 +224,10 @@ public class RegistrarServiceProxy {
     }
 
     private void sendMessage(String s) {
+        System.out.println("Sending: " + s);
         rabbitTemplate.convertAndSend(registrarServiceQueue.getName(), s);
     }
+
     private static String asJsonString(final Object obj) {
         try {
             return new ObjectMapper().writeValueAsString(obj);
@@ -231,6 +235,7 @@ public class RegistrarServiceProxy {
             throw new RuntimeException(e);
         }
     }
+
     private static <T> T  fromJsonString(String str, Class<T> valueType ) {
         try {
             return new ObjectMapper().readValue(str, valueType);
