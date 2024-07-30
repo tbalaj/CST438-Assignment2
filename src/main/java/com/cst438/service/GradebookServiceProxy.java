@@ -33,6 +33,7 @@ public class GradebookServiceProxy {
 
     @RabbitListener(queues = "registrar_service")
     public void receiveFromGradebook(String message) {
+        System.out.println("Recieving: " + message);
         String[] parts = message.split(" ", 1);
         String action = parts[0];
         String data = parts[1];
@@ -41,12 +42,13 @@ public class GradebookServiceProxy {
             switch (action) {
                 case "updatedEnrollment" -> {
                     EnrollmentDTO updateDTO = fromJsonString(data, EnrollmentDTO.class);
-                    Enrollment e = enrollmentRepository.findById(updateDTO.enrollmentId()).orElse(null);
-
-                    if (e != null) {
-                        e.setGrade(updateDTO.grade());
-                        enrollmentRepository.save(e);
-                    }
+                    // IF exists, update repository,
+                    enrollmentRepository
+                            .findById(updateDTO.enrollmentId())
+                            .ifPresent(e -> {
+                                e.setGrade(updateDTO.grade());
+                                enrollmentRepository.save(e);
+                            });
 
                 }
             }
