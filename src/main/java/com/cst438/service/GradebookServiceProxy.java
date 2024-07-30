@@ -32,7 +32,7 @@ public class GradebookServiceProxy {
     RabbitTemplate rabbitTemplate;
 
     @RabbitListener(queues = "registrar_service")
-public void receiveFromGradebook(String message) {
+    public void receiveFromGradebook(String message) {
     System.out.println("Receiving: " + message);
     
     try {
@@ -49,7 +49,6 @@ public void receiveFromGradebook(String message) {
             case "updatedEnrollment" -> {
                 EnrollmentDTO updateDTO = fromJsonString(data, EnrollmentDTO.class);
                 Enrollment e = enrollmentRepository.findById(updateDTO.enrollmentId()).orElse(null);
-
                 if (e != null) {
                     e.setGrade(updateDTO.grade());
                     enrollmentRepository.save(e);
