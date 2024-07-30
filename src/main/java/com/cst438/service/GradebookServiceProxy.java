@@ -32,30 +32,37 @@ public class GradebookServiceProxy {
     RabbitTemplate rabbitTemplate;
 
     @RabbitListener(queues = "registrar_service")
-    public void receiveFromGradebook(String message) {
-        String[] parts = message.split(" ", 1);
-        String action = parts[0];
-        String data = parts[1];
-        try {
-
-            switch (action) {
-                case "updatedEnrollment" -> {
-                    EnrollmentDTO updateDTO = fromJsonString(data, EnrollmentDTO.class);
-                    Enrollment e = enrollmentRepository.findById(updateDTO.enrollmentId()).orElse(null);
-
-                    if (e != null) {
-                        e.setGrade(updateDTO.grade());
-                        enrollmentRepository.save(e);
-                    }
-
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error Processing Request " + message + "\n w/ error\n" + e);
-
+public void receiveFromGradebook(String message) {
+    System.out.println("Receiving: " + message);
+    
+    try {
+        String[] parts = message.split(" ", 2); 
+        
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Invalid message format. Expected 'action data'. Received: " + message);
         }
 
+        String action = parts[0];
+        String data = parts[1];
+
+        switch (action) {
+            case "updatedEnrollment" -> {
+                EnrollmentDTO updateDTO = fromJsonString(data, EnrollmentDTO.class);
+                Enrollment e = enrollmentRepository.findById(updateDTO.enrollmentId()).orElse(null);
+
+                if (e != null) {
+                    e.setGrade(updateDTO.grade());
+                    enrollmentRepository.save(e);
+                } else {
+                    System.out.println("Enrollment not found: " + updateDTO.enrollmentId());
+                }
+            }
+            default -> System.out.println("Unknown action: " + action);
+        }
+    } catch (Exception e) {
+        System.out.println("Error Processing Request: " + message + "\nError: " + e);
     }
+}
 
     private void sendMessage(String s) {
         System.out.println("Sending: " + s);
