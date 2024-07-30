@@ -52,7 +52,7 @@ public class RegistrarServiceProxy {
         try{
             switch (action) {
                 case "addedCourse" -> addCourse(data);
-                case "updatexCourse" -> updateCourse(data);
+                case "updatedCourse" -> updateCourse(data);
                 case "deletedCourse" -> deleteCourse(data);
                 case "addedSection" -> addSection(data);
                 case "updatedSection" -> updateSection(data);
