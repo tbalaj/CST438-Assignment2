@@ -208,7 +208,7 @@ public class RegistrarServiceProxy {
     }
 
     public void updateEnrollment(EnrollmentDTO eDTO) {
-        String msg = "updateEnrollment " + asJsonString(eDTO);
+        String msg = "updatedEnrollment " + asJsonString(eDTO);
         sendMessage(msg);
     }
 
