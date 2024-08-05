@@ -6,9 +6,11 @@ import com.cst438.dto.EnrollmentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,12 +37,22 @@ public class EnrollmentController {
     private TermRepository termRepository;
 
     @GetMapping("/sections/{sectionNo}/enrollments")
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_INSTRUCTOR')")
     public List<EnrollmentDTO> getEnrollments(
-            @PathVariable("sectionNo") int sectionNo ) {
+            @PathVariable("sectionNo") int sectionNo,
+            Principal principal) {
 
         // TODO
 		//  hint: use enrollment repository findEnrollmentsBySectionNoOrderByStudentName method
         //  remove the following line when done
+
+        Section sec = sectionRepository.findById(sectionNo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Section not found."));
+
+        // Perform the security check
+        if (sec.getInstructorEmail() == null || !sec.getInstructorEmail().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized User");
+        }
 
         try {
             List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsBySectionNoOrderByStudentName(sectionNo);
@@ -80,7 +92,8 @@ public class EnrollmentController {
     // instructor uploads enrollments with the final grades for the section
     // user must be instructor for the section
     @PutMapping("/enrollments")
-    public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist) {
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_INSTRUCTOR')")
+    public void updateEnrollmentGrade(@RequestBody List<EnrollmentDTO> dlist, Principal principal) {
 
         // TODO
 
@@ -94,6 +107,10 @@ public class EnrollmentController {
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
                 enrollment.setGrade(dto.grade());
                 enrollmentRepository.save(enrollment);
+
+                if(enrollment.getSection().getInstructorEmail() == null || !enrollment.getSection().getInstructorEmail().equals(principal.getName())) {
+                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized User");
+                }
             }
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error updating grades", e);
